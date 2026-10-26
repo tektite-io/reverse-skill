@@ -1,7 +1,7 @@
-# 工具默认值
+# Tool Defaults
 
-- `js-reverse_list_network_requests`：先看第一页默认结果，不足再翻页
-- `js-reverse_search_in_sources`：默认 `excludeMinified=true`
-- `js-reverse_get_script_source`：只读小片段，整份源码优先配合 `js-reverse_save_script_source`
-- `js-reverse_break_on_xhr`：只填能稳定命中的 URL 片段
-- `js-reverse_get_paused_info`：默认先看 `frameIndex=0`
+- `js-reverse_list_network_requests`: First check the default results on the first page; paginate only if insufficient
+- `js-reverse_search_in_sources`: Defaults to `excludeMinified=true`
+- `js-reverse_get_script_source`: Read only small snippets; for the full source, prefer `js-reverse_save_script_source`
+- `js-reverse_break_on_xhr`: Only fill in URL substrings that reliably match
+- `js-reverse_get_paused_info`: Defaults to checking `frameIndex=0` first

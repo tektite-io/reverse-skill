@@ -1,85 +1,85 @@
-# Next.js CDK 订单中心的契约保真本地重建
+# Contract-Faithful Local Reconstruction of a Next.js CDK Order Center
 
-> 日期：2026-08-01
+> Date: 2026-08-01
 >
-> 场景：Web / API / JS 逆向与本地重建
+> Scenario: Web / API / JS reverse engineering and local reconstruction
 >
-> 脱敏：目标域名与端口使用标准占位符；凭据、CDK、订单标识及私有路径仅保留类别，不记录原值
+> Anonymization: target domain and port use standard placeholders; credentials, CDKs, order identifiers, and private paths retain only their category, with original values not recorded
 
-## 场景分类
+## Scenario Classification
 
-Web / API / JS 逆向
+Web / API / JS reverse engineering
 
-## 目标概述
+## Goal Overview
 
-对一个 Next.js 单页订单中心建立“入口快照、静态 bundle、运行时页面、公开 OpenAPI”四源证据链，在不连接真实支付、worker 与检查服务的前提下，重建同信息架构、同浏览器请求形状、同响应投影、同订单状态语义的可运行本地项目。
+Build a four-source evidence chain for a Next.js single-page order center — "entry snapshot, static bundle, runtime page, public OpenAPI" — and, without connecting to the real payment, worker, or check services, reconstruct a runnable local project with the same information architecture, the same browser request shape, the same response projection, and the same order-state semantics.
 
-## Scope 摘要（脱敏）
+## Scope Summary (Anonymized)
 
-- auth_basis: 用户提供入口并要求分析与同款本地实现
-- network_profile: 公开入口与公开 OpenAPI 只读复核；构建和验收均指向环回地址
+- auth_basis: the user provided the entry and requested analysis plus a matching local implementation
+- network_profile: read-only review of the public entry and public OpenAPI; builds and acceptance all point to loopback addresses
 - asset_types: [web, frontend_js, public_openapi, screenshot, local_source]
-- fixture_profile: 合成 CDK、合成 credential、合成支付链接、确定性 worker/check/payment 适配器
+- fixture_profile: synthetic CDK, synthetic credential, synthetic payment link, deterministic worker/check/payment adapters
 
-## 角色
+## Roles
 
 - lead_role: lead
 - specialists: [cre, doc]
 
-## 完整执行链路
+## Full Execution Chain
 
-1. 固化入口 HTML、响应头、公开 OpenAPI 与 SHA-256，并复用既有静态包和浏览器取证。
-2. 从主页面 bundle 提取路由、请求体字段、header、Storage key、轮询周期、条件渲染与状态词汇表。
-3. 将页面内部 legacy API 与公开 v1 API 分开建模，建立各自 serializer，避免共用 DTO 导致字段漂移。
-4. 从运行时全页截图、DOM 与 CSS 计算桌面几何、移动断点、卡片层级、控件状态和文案基线。
-5. 建立 canonical domain model、CDK 账本和确定性状态机；外部能力通过 `CHECK_FN`、`PAYMENT_PROVIDER`、`WORKER_GATEWAY` 夹具适配器承接。
-6. 将 credential 和支付链接在请求期立即缩减为摘要、类型和安全提示；持久化模型不设置原文槽位。
-7. 对单笔、批量、详情、取消、重提、分页、双鉴权和 OpenAPI 文档执行契约测试。
-8. 用桌面与移动浏览器截图验证视觉；用生产构建、接口冒烟、秘密扫描和解压复验形成交付证据。
+1. Freeze the entry HTML, response headers, public OpenAPI, and SHA-256, and reuse the existing static bundle and browser forensics.
+2. Extract routes, request body fields, headers, Storage keys, polling intervals, conditional rendering, and the state vocabulary from the main page bundle.
+3. Model the page-internal legacy API and the public v1 API separately, building a serializer for each to avoid field drift from a shared DTO.
+4. Derive desktop geometry, mobile breakpoints, card hierarchy, control states, and copy baselines from runtime full-page screenshots, the DOM, and CSS.
+5. Build a canonical domain model, a CDK ledger, and a deterministic state machine; external capabilities are handled by `CHECK_FN`, `PAYMENT_PROVIDER`, and `WORKER_GATEWAY` fixture adapters.
+6. Reduce credentials and payment links to a digest, type, and safety hint immediately at request time; the persistence model has no slot for the original text.
+7. Run contract tests for single, batch, detail, cancel, resubmit, pagination, dual authentication, and the OpenAPI document.
+8. Verify visuals with desktop and mobile browser screenshots; form delivery evidence with a production build, interface smoke tests, secret scanning, and unpack-and-reverify.
 
-## Evidence 链摘要（脱敏）
+## Evidence Chain Summary (Anonymized)
 
-| E-id | source_type | 可复用命令模式 | 关联结论 |
+| E-id | source_type | Reusable command pattern | Related conclusion |
 |------|-------------|----------------|----------|
-| E-001 | network/file | `curl -D headers -o page https://{target_domain}/<entry>; shasum -a 256 page` | 框架入口与时间戳基线 |
-| E-002 | frontend_js/openapi | `rg 'sessionStorage|/api/|productType|customerToken' {formatted_chunk}`；`jq '{info,paths,securitySchemes}' openapi.json` | legacy 请求、状态、浏览器存储与 v1 合同 |
-| E-003 | runtime_visual/local_qa | `chromium --headless ...; screenshot + DOMRect`；`npm test && npm run build && BASE_URL=... npm run smoke` | 桌面/移动几何、条件渲染与本地合同闭环 |
+| E-001 | network/file | `curl -D headers -o page https://{target_domain}/<entry>; shasum -a 256 page` | framework entry and timestamp baseline |
+| E-002 | frontend_js/openapi | `rg 'sessionStorage|/api/|productType|customerToken' {formatted_chunk}`; `jq '{info,paths,securitySchemes}' openapi.json` | legacy requests, state, browser storage, and the v1 contract |
+| E-003 | runtime_visual/local_qa | `chromium --headless ...; screenshot + DOMRect`; `npm test && npm run build && BASE_URL=... npm run smoke` | desktop/mobile geometry, conditional rendering, and the local contract loop |
 
-## Finding / Path 摘要
+## Finding / Path Summary
 
-- top_finding: 页面内部 legacy API 与公开 v1 API 共享业务语义，但请求字段、鉴权入口和响应投影不同，重建时需要“一个领域模型、两个边界 serializer”。
+- top_finding: the page-internal legacy API and the public v1 API share business semantics, but their request fields, authentication entry, and response projection differ; reconstruction requires "one domain model, two boundary serializers".
 - path_type: callflow
-- path_one_liner: 表单输入 -> 页面字段映射 -> legacy Route Handler -> canonical service -> 夹具适配器/账本 -> legacy serializer -> 轮询渲染。
+- path_one_liner: form input -> page field mapping -> legacy Route Handler -> canonical service -> fixture adapter/ledger -> legacy serializer -> polling render.
 
-## 踩坑记录
+## Pitfalls
 
-| 问题 | 原因 | 解决方案 | 耗时 |
+| Problem | Cause | Solution | Time |
 |------|------|---------|------|
-| 仅按路由名搭接口仍造成页面字段空白 | legacy 与 v1 的响应字段并非同一 DTO | 从 bundle 的属性读取点反推 serializer，并对两套边界分别做契约测试 | ~45 min |
-| 页面初始形态与绑定后形态混在一起 | 多处卡片、提示、按钮和列表为条件渲染 | 先固化未绑定基线，再按 CDK/订单状态制作交互矩阵 | ~30 min |
-| 批量接口需要同时表达部分成功与账本一致性 | 把单项错误提升成整批异常会丢失原页面的逐项结果语义 | 先逐项解析，再在一次 store mutation 内按顺序产出 created/duplicate/failed，末尾统一校验账本并原子落盘 | ~35 min |
-| 文档 required 字段与 properties 名称存在歧义 | OpenAPI 与页面内部调用面独立演进 | 保留规范字段，同时在边界识别兼容 alias；报告单列裁决依据 | ~15 min |
-| 视觉看似接近但纵向误差持续累积 | 卡片 padding、line-height、gap 的小偏差叠加 | 以完整页面高度、主列宽和关键 DOMRect 为约束，逐段回归截图 | ~40 min |
-| 夹具提示文案破坏同款首屏 | 实现说明直接混入产品 UI | UI 保持取证基线，夹具说明放 README；输入仍使用确定性示例 | ~15 min |
+| Building interfaces by route name alone still leaves page fields blank | The legacy and v1 response fields are not the same DTO | Reverse the serializer from the property read points in the bundle, and run contract tests on each boundary | ~45 min |
+| The page's initial form and its bound form are mixed together | Many cards, hints, buttons, and lists are conditionally rendered | Freeze the unbound baseline first, then build an interaction matrix by CDK/order state | ~30 min |
+| The batch interface must express both partial success and ledger consistency | Promoting a single-item error to a whole-batch exception loses the original page's per-item result semantics | Parse item by item first, then produce created/duplicate/failed in order within a single store mutation, and finally validate the ledger uniformly and persist atomically | ~35 min |
+| Ambiguity between the documented required fields and property names | OpenAPI and the page-internal call surface evolve independently | Keep the spec fields while recognizing compatible aliases at the boundary; list the adjudication basis separately in the report | ~15 min |
+| Visually close but vertical error keeps accumulating | Small deviations in card padding, line-height, and gap compound | Constrain by full page height, main column width, and key DOMRects, and regress screenshots section by section | ~40 min |
+| Fixture hint copy breaks the matching first screen | Implementation notes are mixed directly into the product UI | Keep the UI at the forensic baseline and put fixture notes in the README; inputs still use deterministic examples | ~15 min |
 
-## 工具链发现
+## Toolchain Findings
 
-- 静态 bundle 的属性读取点比接口路径本身更适合恢复响应 DTO。
-- legacy/v1 serializer 分层可让页面兼容性与公开 API 稳定性同时成立。
-- `fullPage` 截图要结合视口宽度、页面总高度与 DOMRect；单纯像素相似度会被字体抗锯齿放大。
-- 批量订单应保留逐项 created/duplicate/failed；去重、容量扣减与账本校验放在同一 mutation 中，最终只做一次原子文件替换。
-- 秘密扫描应覆盖源代码、运行时 store、测试日志和最终压缩包展开目录，而不只扫描 Git 工作树。
+- A static bundle's property read points are better than the interface paths themselves for recovering the response DTO.
+- Layering legacy/v1 serializers lets page compatibility and public API stability hold at the same time.
+- `fullPage` screenshots must be combined with viewport width, total page height, and DOMRects; pure pixel similarity is amplified by font anti-aliasing.
+- Batch orders should retain per-item created/duplicate/failed; deduplication, capacity deduction, and ledger validation go in the same mutation, with a single atomic file replacement at the end.
+- Secret scanning should cover source code, the runtime store, test logs, and the final archive's extracted directory, not just the Git worktree.
 
-## 关键代码/命令
+## Key Code/Commands
 
 ```bash
-# 静态调用面与状态字段
+# Static call surface and state fields
 rg -n 'customerToken|productType|upiExpiresAt|customerResubmitCount|sessionStorage' {formatted_chunk}
 
-# 公开 API 结构
+# Public API structure
 jq '{openapi,info,paths:(.paths|keys),security:.components.securitySchemes}' openapi.json
 
-# 本地质量门
+# Local quality gates
 npm run lint
 npm test
 npx tsc --noEmit
@@ -87,50 +87,50 @@ npm run build
 BASE_URL=http://127.0.0.1:{port} npm run smoke
 ```
 
-## 对本包的改进建议
+## Suggestions for This Package
 
-1. `js-reverse` 增加“legacy UI API 与 public API 双 serializer”检查表。
-2. 报告模板增加“视觉基线几何表”和“初始/绑定/订单状态矩阵”。
-3. QA 模板增加批量部分成功与原子落盘、双鉴权 OR、OpenAPI schema/实际响应一致性和交付包展开扫描。
+1. Add a "legacy UI API and public API dual serializer" checklist to `js-reverse`.
+2. Add a "visual baseline geometry table" and an "initial/bound/order-state matrix" to the report template.
+3. Add batch partial success and atomic persistence, dual-auth OR, OpenAPI schema/actual response consistency, and delivery-package extraction scanning to the QA template.
 
-## 可复用的模式/脚本片段
+## Reusable Patterns/Script Fragments
 
-1. **四源交叉**：入口快照定位版本，静态 bundle 恢复调用面，运行时恢复条件渲染，OpenAPI 恢复公开合同。
-2. **一核双投影**：canonical domain 保持状态与账本统一，legacy/public serializer 保持边界保真。
-3. **先初始态、后状态矩阵**：先锁定未绑定首屏，再验证绑定、创建、进行中、完成、取消、重提。
-4. **请求期缩减**：原始输入进入 service 后立刻转换成 SHA-256、类型和掩码，日志与 store 只接收缩减结果。
-5. **交付包二次复验**：从压缩包解压到新目录，重新安装、测试和构建，避免工作目录残留掩盖问题。
+1. **Four-source cross-check**: the entry snapshot locates the version, the static bundle recovers the call surface, runtime recovers conditional rendering, and OpenAPI recovers the public contract.
+2. **One core, two projections**: the canonical domain keeps state and ledger unified, while legacy/public serializers keep boundary fidelity.
+3. **Initial state first, then the state matrix**: lock the unbound first screen first, then verify bound, creating, in-progress, complete, cancelled, and resubmitted.
+4. **Request-time reduction**: raw input is immediately converted into SHA-256, type, and mask once it enters the service; logs and the store receive only the reduced result.
+5. **Delivery-package re-verification**: extract the archive to a new directory, reinstall, test, and build, to avoid leftover working-directory state masking problems.
 
-## 进化动作
+## Evolution Actions
 
-- [ ] 更新了路由矩阵
-- [ ] 更新了 tool-index
-- [ ] 更新了 bootstrap-manifest
-- [ ] 更新了子 skill 文档
-- [x] 新增了 pitfalls 记录
-- [ ] 无需更新
+- [ ] Updated the routing matrix
+- [ ] Updated the tool-index
+- [ ] Updated the bootstrap-manifest
+- [ ] Updated sub-skill documentation
+- [x] Added a pitfalls record
+- [ ] No update needed
 
-## 环境信息
+## Environment Information
 
 - OS: macOS
-- 工具版本: Node.js 24、Next.js 16.2.12 App Router、React、TypeScript 5.9.3、Chrome/Playwright
-- 目标平台/版本: Next.js App Router / React / OpenAPI 3.1
+- Tool versions: Node.js 24, Next.js 16.2.12 App Router, React, TypeScript 5.9.3, Chrome/Playwright
+- Target platform/version: Next.js App Router / React / OpenAPI 3.1
 
-## 最终验收记录
+## Final Acceptance Record
 
-- ESLint、TypeScript 5.9.3、Next.js 16.2.12 production build：通过。
-- Node test：8/8 通过。
-- HTTP smoke：15 个契约组通过。
-- Playwright：11 张状态/视口截图、10 组断言通过，浏览器 console 与 page error 均为空。
-- 1440 px 初始页与基线尺寸同为 1440×1294；RGB MAE 2.301148，5/通道阈值内像素占比 0.945085。
+- ESLint, TypeScript 5.9.3, Next.js 16.2.12 production build: passed.
+- Node test: 8/8 passed.
+- HTTP smoke: 15 contract groups passed.
+- Playwright: 11 state/viewport screenshots and 10 assertion groups passed; browser console and page errors both empty.
+- The 1440 px initial page and the baseline are both 1440×1294; RGB MAE 2.301148, with 0.945085 of pixels within the 5/channel threshold.
 
-## 脱敏复核
+## Anonymization Review
 
-- [x] 目标域名替换为 `{target_domain}`
-- [x] CDK、订单号、Token、Cookie、JWT 与支付链接原文未写入
-- [x] 真实 IP、端口与本地私有路径未写入
-- [x] 运行命令使用 `{port}` 与占位符
-- [x] 交付经验仅保留方法、结构与验证模式
+- [x] Target domain replaced with `{target_domain}`
+- [x] CDK, order number, Token, Cookie, JWT, and payment link originals not written
+- [x] Real IPs, ports, and local private paths not written
+- [x] Run commands use `{port}` and placeholders
+- [x] Delivery lessons retain only methods, structure, and verification patterns
 
 ---
-<!-- [社区贡献] 完成后询问用户是否 PR 到主仓库。 -->
+<!-- [Community contribution] After completion, ask the user whether to PR to the main repository. -->

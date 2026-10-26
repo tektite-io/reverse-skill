@@ -1,48 +1,48 @@
-# [种子] APK Frida 绕过 OkHttp SSL Pinning
+# [Seed] APK Frida Bypass of OkHttp SSL Pinning
 
-## 场景分类
-APK 逆向 / 移动安全测试
+## Scenario Classification
+APK Reverse Engineering / Mobile Security Testing
 
-## 目标概述
-对一个使用 OkHttp + 自定义 CertificatePinner 的 Android 应用，用 Frida 动态绕过证书校验，让 Burp 能拿到明文流量。
+## Goal Overview
+For an Android app using OkHttp + a custom CertificatePinner, dynamically bypass certificate validation with Frida so Burp can capture plaintext traffic.
 
-## 完整执行链路
+## Complete Execution Chain
 
-1. 装 Frida + frida-server，启动目标 App，确认进程名
+1. Install Frida + frida-server, launch the target app, and confirm the process name.
    ```bash
    adb shell "ps -A | grep com.target.app"
    frida-ps -U | grep target
    ```
-2. 用 Burp 抓包尝试 → 拿到证书错误，说明启用了 Pinning
-3. 用 jadx 打开 APK 反编译 → 搜 `CertificatePinner` 或 `checkServerTrusted`
-4. 确认是 OkHttp 自带 `CertificatePinner` 还是自定义 `X509TrustManager`
-5. 写 Frida 脚本 hook 关键校验点
-6. 启动 Frida 注入：`frida -U -f com.target.app -l bypass.js --no-pause`
-7. 重新抓包 → Burp 能看到明文 HTTPS
+2. Attempt to capture traffic with Burp → get a certificate error, indicating that pinning is enabled.
+3. Open the APK in jadx to decompile → search for `CertificatePinner` or `checkServerTrusted`.
+4. Determine whether it uses OkHttp's built-in `CertificatePinner` or a custom `X509TrustManager`.
+5. Write a Frida script to hook the key validation points.
+6. Start Frida injection: `frida -U -f com.target.app -l bypass.js --no-pause`.
+7. Capture traffic again → Burp can see plaintext HTTPS.
 
-## 踩坑记录
+## Pitfalls
 
-| 问题 | 原因 | 解决方案 | 耗时 |
+| Issue | Cause | Solution | Time Spent |
 |------|------|---------|------|
-| Frida 启动报错 `unable to connect to remote frida-server` | server 未启动或端口被占 | `adb forward tcp:27042 tcp:27042` + 启动 server | 10min |
-| Hook 不生效 | App 启动太快，Frida 注入晚了 | 用 `-f` 参数 spawn 模式，配合 `--no-pause` | 15min |
-| Hook 后部分请求仍 SSL 错误 | 应用同时用了 OkHttp 与原生 HttpsURLConnection | 增加 hook `X509TrustManager.checkServerTrusted` 与 `HostnameVerifier.verify` | 20min |
-| 反检测：App 检测到 Frida 后退出 | App 自检 frida-server 端口 / `/data/local/tmp/re.frida.server` | 改用 frida-gadget（注入 .so 进 APK 内）或 magisk + zygisk-frida | 30min+ |
-| ProGuard 混淆后类名找不到 | 类名变成 `a.b.c` 短名 | 在 jadx 里用 `Find Usages` 反查谁实例化 OkHttpClient.Builder | 25min |
+| Frida startup error `unable to connect to remote frida-server` | Server not started or port already in use | `adb forward tcp:27042 tcp:27042` + start the server | 10min |
+| Hook does not take effect | App starts too fast; Frida injection is too late | Use `-f` spawn mode together with `--no-pause` | 15min |
+| Some requests still have SSL errors after hooking | App uses both OkHttp and native HttpsURLConnection | Add hooks for `X509TrustManager.checkServerTrusted` and `HostnameVerifier.verify` | 20min |
+| Anti-detection: app exits after detecting Frida | App self-checks the frida-server port / `/data/local/tmp/re.frida.server` | Switch to frida-gadget (inject a .so into the APK) or magisk + zygisk-frida | 30min+ |
+| Class names not found after ProGuard obfuscation | Class names are shortened to `a.b.c` | In jadx, use `Find Usages` to trace who instantiates OkHttpClient.Builder | 25min |
 
-## 工具链发现
+## Toolchain Findings
 
-- **objection** 内置 `android sslpinning disable` 一条命令搞定 80% 场景，不用自己写 Frida 脚本
-- **frida-multiple-unpinning**（GitHub: WithSecureLabs）覆盖 OkHttp 3/4、Retrofit、HttpsURLConnection、Conscrypt、Cordova，万能脚本
-- **MEDUSA** 框架自带各种安卓绕过模块，比裸 Frida 上手快
+- **objection** has a built-in `android sslpinning disable` command that handles 80% of cases without writing your own Frida script.
+- **frida-multiple-unpinning** (GitHub: WithSecureLabs) covers OkHttp 3/4, Retrofit, HttpsURLConnection, Conscrypt, and Cordova — a universal script.
+- The **MEDUSA** framework includes various Android bypass modules and is faster to get started with than raw Frida.
 
-## 关键代码/命令
+## Key Code/Commands
 
-最小可用 OkHttp Pin 绕过脚本：
+Minimal working OkHttp pinning bypass script:
 
 ```javascript
 Java.perform(function () {
-    // 1. OkHttp 3/4 内置 CertificatePinner
+    // 1. OkHttp 3/4 built-in CertificatePinner
     try {
         var CertificatePinner = Java.use('okhttp3.CertificatePinner');
         CertificatePinner.check.overload('java.lang.String', 'java.util.List').implementation = function (host, peers) {
@@ -51,7 +51,7 @@ Java.perform(function () {
         };
     } catch (e) {}
 
-    // 2. 自定义 X509TrustManager.checkServerTrusted
+    // 2. Custom X509TrustManager.checkServerTrusted
     try {
         var TrustManagerImpl = Java.use('com.android.org.conscrypt.TrustManagerImpl');
         TrustManagerImpl.verifyChain.implementation = function (untrusted, holdHost, host, clientAuth, ocspData, tlsSctData) {
@@ -60,44 +60,44 @@ Java.perform(function () {
         };
     } catch (e) {}
 
-    // 3. HostnameVerifier 全过
+    // 3. HostnameVerifier pass-through
     var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
-    // 用 objection 自带模板补完...
+    // Complete using objection's built-in template...
 });
 ```
 
-一键命令（推荐）：
+One-command approach (recommended):
 
 ```bash
 objection --gadget com.target.app explore -s "android sslpinning disable"
 ```
 
-## 对本包的改进建议
+## Suggestions for This Package
 
-- `apk-reverse/references/` 应有专门的 `ssl-pinning-bypass.md`，把 OkHttp 3/4、Conscrypt、自定义 TrustManager、Flutter（boringssl）四种主流情况合并为速查
-- bootstrap manifest 加入 `objection`（pip 包）
+- `apk-reverse/references/` should have a dedicated `ssl-pinning-bypass.md` that consolidates the four mainstream cases — OkHttp 3/4, Conscrypt, custom TrustManager, and Flutter (BoringSSL) — into a quick reference.
+- Add `objection` (pip package) to the bootstrap manifest.
 
-## 可复用的模式/脚本片段
+## Reusable Patterns/Script Snippets
 
-**通用绕过流程**：
+**Universal bypass workflow**:
 
 ```text
-1. 抓包 → 看是哪类错误（CertPin / Hostname / TrustManager）
-2. jadx 搜关键类（CertificatePinner / X509TrustManager / HostnameVerifier）
-3. 优先 objection 一键 → 不行再 frida-multiple-unpinning → 再不行手写
-4. 若有反 Frida 检测 → 切 frida-gadget 或 zygisk
-5. Flutter 应用单独处理（hook libflutter.so 的 ssl_verify_peer_cert）
+1. Capture traffic → identify the error type (CertPin / Hostname / TrustManager)
+2. Search for key classes in jadx (CertificatePinner / X509TrustManager / HostnameVerifier)
+3. Try objection's one-command first → then frida-multiple-unpinning → then write your own
+4. If anti-Frida detection exists → switch to frida-gadget or zygisk
+5. Handle Flutter apps separately (hook libflutter.so's ssl_verify_peer_cert)
 ```
 
-## 进化动作
-- [x] 路由矩阵已覆盖（apk-reverse + Frida）
-- [x] tool-index 中 frida 状态已检查
-- [ ] 建议增补 ssl-pinning-bypass.md 速查
+## Evolution Actions
+- [x] Routing matrix already covers this (apk-reverse + Frida)
+- [x] Frida status in tool-index has been checked
+- [ ] Suggest adding ssl-pinning-bypass.md quick reference
 
-## 环境信息
+## Environment Information
 - Kali / Windows + adb + frida-tools 16.x
-- 目标 Android: 8-14（不同版本 TrustManagerImpl 路径不同）
-- 注入方式: USB 调试 + frida-server / 或 zygisk-frida 隐藏
+- Target Android: 8–14 (the TrustManagerImpl path differs by version)
+- Injection method: USB debugging + frida-server / or zygisk-frida for hiding
 
-## 脱敏要求
-本条目为种子数据，基于公开技术模式编写，不涉及真实目标。包名 `com.target.app` 为占位符。
+## Anonymization Requirements
+This entry is seed data, written based on public technical patterns, and does not involve real targets. The package name `com.target.app` is a placeholder.

@@ -5,51 +5,51 @@ description: Use for authorized hardware and embedded interface security researc
 
 # Hardware / Embedded Interface Security
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 确认**物理接触授权**与设备归属
-2. `NOW`: ESD/电源安全；默认只读探测
-3. `NEXT`: 联合 firmware-pentest 做镜像分析
-4. `ACT`: 外壳与调试接口识别 →  consoles → 提取
+1. `NOW`: Confirm **physical-access authorization** and device ownership
+2. `NOW`: ESD/power safety; probe read-only by default
+3. `NEXT`: Coordinate with firmware-pentest for image analysis
+4. `ACT`: Enclosure and debug interface identification → console access → extraction
 
-## 适用场景
+## Applicable Scenarios
 
-- UART / JTAG / SWD 调试口发现
-- 启动日志、root shell、引导打断
-- 配合拆机提取 Flash
-- 安全启动/加密 Flash 的可行性评估（非破坏性优先）
+- UART / JTAG / SWD debug port discovery
+- Boot logs, root shell, boot interruption
+- Flash extraction in coordination with device teardown
+- Feasibility assessment of secure boot/encrypted Flash (non-destructive first)
 
-## 工作流
+## Workflow
 
 ```text
-□ 拆解授权设备；拍照标注测试点
-□ 万用表找 GND/VCC/TX/RX；逻辑电平 1.8/3.3/5V
-□ USB-TTL 只读日志；记录波特率
-□ JTAG：枚举 IDCODE；评估是否锁定
-□ 提取镜像 → 交接 firmware-pentest / ghidra
+□ Disassemble the authorized device; photograph and label test points
+□ Use a multimeter to find GND/VCC/TX/RX; logic levels 1.8/3.3/5V
+□ USB-TTL read-only log capture; record the baud rate
+□ JTAG: enumerate IDCODE; assess whether it is locked
+□ Extract the image → hand off to firmware-pentest / ghidra
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
+| Tool | Purpose |
 |------|------|
 | USB-TTL / logic analyzer | UART |
-| J-Link / CMSIS-DAP | 调试 |
-| bus pirate / flipper（实验室） | 多协议 |
-| binwalk / flashrom | 提取 |
+| J-Link / CMSIS-DAP | Debugging |
+| Bus Pirate / Flipper (lab) | Multi-protocol |
+| binwalk / flashrom | Extraction |
 
-## 参考
+## References
 
 - `references/debug-interface-triage.md`
 - `../firmware-pentest/` `../ot-ics/`
 
-## 路由上下文
+## Routing Context
 
-**上游**: MASTER R34  
-**MUST NOT**: 未授权拆机/损坏他人设备
+**Upstream**: MASTER R34  
+**MUST NOT**: Disassemble or damage others' devices without authorization
 
-## 任务完成自检
+## Task Completion Self-Check
 
-- [ ] 是否记录接口电平与引脚图？
-- [ ] 镜像是否哈希保全？
-- [ ] Checklist？
+- [ ] Did I record interface voltage levels and a pinout diagram?
+- [ ] Is the image preserved with a hash?
+- [ ] Checklist?

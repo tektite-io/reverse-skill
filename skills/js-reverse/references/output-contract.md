@@ -1,9 +1,9 @@
-# 输出契约
+# Output Contract
 
-最终输出至少应包含：
+The final output should at least include:
 
-- 目标请求和参数位置
-- 哪个脚本、哪个函数参与生成
-- 证据来源：请求、调用栈、断点、运行时值
-- 当前是否已能稳定复现
-- 若未完成，还差哪一个环境缺口
+- The target request and parameter locations
+- Which script and which function are involved in generation
+- Evidence sources: requests, call stacks, breakpoints, runtime values
+- Whether stable reproduction is currently possible
+- If incomplete, which environment gap remains

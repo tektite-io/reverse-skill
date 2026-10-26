@@ -1,6 +1,6 @@
 ---
 name: dsl-vm-captcha-reverse-2026-07-05
-description: 验证码系统完整逆向分析 — JS 前端模块 + DSL VM 风控引擎
+description: Full reverse engineering analysis of a CAPTCHA system — JS frontend modules + DSL VM risk-control engine
 metadata:
   type: project
   tags: [captcha, reverse, dsl-vm, wasm, frontend]
@@ -8,79 +8,79 @@ metadata:
   status: completed
 ---
 
-# 验证码系统完整逆向分析
+# Full Reverse Engineering Analysis of a CAPTCHA System
 
-## 场景
-目标：逆向某大型验证码系统，用于理解其完整的工作原理和验证流程。
+## Scenario
+Target: reverse engineer a large CAPTCHA system to understand its complete working principle and verification flow.
 
-## 目标实体
-- **nc.js** (72KB) — Webpack 打包的滑块核心 (9 modules)
-- **fireyejs.js** (583KB) — DSL VM 解释器 (26 opcode 自定义指令集)
-- **awsc.js** (9KB) — 模块加载器
-- **secaptcha.js** (72KB) — WASM C 编译产物 (emscripten)
-- **et_f.js** (262KB) — 另一个 DSL VM 类型的文件
+## Target Entities
+- **nc.js** (72KB) — Webpack-bundled slider core (9 modules)
+- **fireyejs.js** (583KB) — DSL VM interpreter (26-opcode custom instruction set)
+- **awsc.js** (9KB) — module loader
+- **secaptcha.js** (72KB) — WASM C compilation output (emscripten)
+- **et_f.js** (262KB) — another DSL VM-type file
 
-## 已验证的技术方案
+## Verified Technical Approaches
 
-### 方案 A：Selenium + CDP 拖拽（推荐）
-通过 CDP `Input.dispatchMouseEvent` 发送原生鼠标事件，在真实浏览器中完成验证。
-- 成功率：高
-- 依赖：Chrome + Selenium/Playwright
+### Approach A: Selenium + CDP drag (recommended)
+Send native mouse events via CDP `Input.dispatchMouseEvent` to complete verification in a real browser.
+- Success rate: high
+- Dependencies: Chrome + Selenium/Playwright
 
-### 方案 B：Playwright 无头浏览器 Runner
-在 Playwright 中加载 DSL VM 和模块加载器，通过 HTTP API 暴露 token。
-- 成功率：中（依赖 WASM 初始化环境）
+### Approach B: Playwright headless browser runner
+Load the DSL VM and module loader in Playwright and expose the token via an HTTP API.
+- Success rate: medium (depends on the WASM initialization environment)
 
-### 方案 C：纯 requests 协议验证
-直接通过 HTTP 请求调用 API 端点进行验证。
-- 成功率：**极低**（token 与浏览器 TLS/IP/指纹强绑定）
-- 不建议使用
+### Approach C: Pure requests protocol verification
+Call API endpoints directly via HTTP requests for verification.
+- Success rate: **extremely low** (the token is strongly bound to the browser's TLS/IP/fingerprint)
+- Not recommended
 
-## 关键发现
+## Key Findings
 
-1. **token 无法脱离浏览器使用** — DSL VM 生成的 token 提交时服务端会校验上下文一致性（TLS JA3、IP、Cookie、Referer 等）
+1. **The token cannot be used outside the browser** — when the DSL VM-generated token is submitted, the server validates context consistency (TLS JA3, IP, Cookie, Referer, etc.)
 
-2. **fireyejs.js 不是 WASM 二进制而是 DSL VM** — 583KB 纯 JS 实现的自定义虚拟机，通过 26 个 opcode 的解释器循环执行编码后的指令
+2. **fireyejs.js is not a WASM binary but a DSL VM** — a 583KB pure-JS custom virtual machine that executes encoded instructions through a 26-opcode interpreter loop
 
-3. **nc.js 9 模块已 100% 逆向** — 包括 API 端点、滑块 UI、交互逻辑、ncSessionID 算法、多语言等
+3. **nc.js's 9 modules are 100% reversed** — including API endpoints, slider UI, interaction logic, the ncSessionID algorithm, and multilanguage support
 
-4. **真正的 WASM 编译产物是 secaptcha.js** — 72KB，使用 SharedArrayBuffer + Atomics，emscripten 编译 C 代码
+4. **The real WASM compilation output is secaptcha.js** — 72KB, using SharedArrayBuffer + Atomics, emscripten-compiled C code
 
-## 踩坑记录
+## Pitfalls
 
-1. 测试 appkey 不会触发真实验证，必须用真实页面的 appkey
-2. `initialize` 返回特定状态码才是滑块模式，返回 `success` 只是会话创建确认
-3. performance log 中 JSONP 请求的 URL 事件可能因 script 标签注入方式而捕获不完整
-4. 导出函数名在 DSL VM 文件中不存在（被 VM 编码了），真正的导出通过模块注册中心暴露
+1. A test appkey does not trigger real verification; you must use the appkey of a real page
+2. Only a specific status code returned by `initialize` indicates slider mode; returning `success` is merely confirmation that the session was created
+3. In the performance log, URL events for JSONP requests may be captured incompletely due to the script-tag injection method
+4. Exported function names do not exist in the DSL VM file (they are VM-encoded); the real exports are exposed through the module registry
 
-## 可复用模式
+## Reusable Patterns
 
-- **DSL VM 逆向模式**：`case 提取 → opcode 分类 → 常量表分析 → 函数追踪 → 导出提取`
-- **验证码系统通用架构**：`入口JS → 模块加载器(WASM/DSL) → API通信层 → 前端UI → 服务端验证`
-- **CDP 原生事件绕过**：`Input.dispatchMouseEvent` 绕过检测，与 WebDriver 无关
+- **DSL VM reverse engineering pattern**: `case extraction → opcode classification → constant table analysis → function tracing → export extraction`
+- **General CAPTCHA system architecture**: `entry JS → module loader (WASM/DSL) → API communication layer → frontend UI → server-side verification`
+- **CDP native event bypass**: `Input.dispatchMouseEvent` bypasses detection and is independent of WebDriver
 
-## 工具链
+## Toolchain
 
-- Selenium + CDP: 浏览器自动化 + 原生鼠标事件
-- Playwright: 无头浏览器 + route 拦截
-- Python requests: 纯 API 调用（验证失败）
-- Node.js + Playwright: Runner 服务
+- Selenium + CDP: browser automation + native mouse events
+- Playwright: headless browser + route interception
+- Python requests: pure API calls (verification failed)
+- Node.js + Playwright: runner service
 
-## 文件结构
+## File Structure
 
 ```
-项目根/
-├── slider_v3.py                # 改进版 CDP 拖拽
-├── protocol_v2.py               # 纯协议版本（验证失败）
-├── phase3_final.py              # Playwright 完整捕获
-├── monitor_inject.js            # 页面监控 Hook
-├── runner/                      # Node.js Runner
-├── captured_js/                 # 已捕获的 JS 文件
-├── hook_data/                   # Hook 捕获的数据
-├── wasm_output/                 # WASM 提取输出
-└── COMPLETE_REVERSE_REPORT.md   # 完整逆向报告
+project root/
+├── slider_v3.py                # improved CDP drag
+├── protocol_v2.py               # pure protocol version (verification failed)
+├── phase3_final.py              # full Playwright capture
+├── monitor_inject.js            # page monitoring hook
+├── runner/                      # Node.js runner
+├── captured_js/                 # captured JS files
+├── hook_data/                   # data captured by hooks
+├── wasm_output/                 # WASM extraction output
+└── COMPLETE_REVERSE_REPORT.md   # full reverse engineering report
 ```
 
-## 参考链接
+## Reference Links
 
-- [[dsl-vm-reverse]] — DSL VM 逆向 skill 文档
+- [[dsl-vm-reverse]] — DSL VM reverse engineering skill documentation

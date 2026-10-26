@@ -5,84 +5,84 @@ description: Use for free/open reverse engineering with Ghidra (headless or GUI)
 
 # Ghidra Reverse Engineering
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md`
-2. `NOW`: 确认需要 **Ghidra**（无 IDA / 偏好开源 / 批量 headless）
-3. `NEXT`: 读 `../tool-index.md` 查 ghidra / ghidra-mcp 路径
-4. `NEXT`: 缺工具 → bootstrap `ghidra-mcp`（若 manifest 支持）或按手动步骤装 Ghidra
-5. `ACT`: 导入样本 → 自动分析 → 导出关键函数反编译
+1. `NOW`: Read `../field-journal/precedent-reverse.md`
+2. `NOW`: Confirm that **Ghidra** is what you need (no IDA / prefer open source / batch headless)
+3. `NEXT`: Read `../tool-index.md` to look up the ghidra / ghidra-mcp paths
+4. `NEXT`: Missing tools → bootstrap `ghidra-mcp` (if the manifest supports it) or install Ghidra following the manual steps
+5. `ACT`: Import the sample → auto-analyze → export decompilation of key functions
 
-## 适用场景
+## Applicable Scenarios
 
-- 无 IDA 许可证时的主逆向入口
-- 批量 headless 分析 / CI 中反编译
-- Ghidra 脚本（Java/Python Jython/PyGhidra）自动化
-- 与 `binary-diff` / `patch-diff-exploit` 的 ghidriff 联动
+- The primary reversing entry point when you have no IDA license
+- Batch headless analysis / decompilation in CI
+- Ghidra script automation (Java/Python Jython/PyGhidra)
+- ghidriff integration with `binary-diff` / `patch-diff-exploit`
 
-## 与 IDA 分工
+## Division of labor with IDA
 
-| 需求 | 优先 |
+| Need | Prefer |
 |------|------|
-| 已有 IDA MCP 深挖 | `ida-reverse/` |
-| 开源 / 批量 / 教学 | **本 skill** |
-| 仅 CLI 快速侦察 | `radare2/` |
+| Deep analysis with an existing IDA MCP | `ida-reverse/` |
+| Open source / batch / teaching | **this skill** |
+| Quick CLI reconnaissance only | `radare2/` |
 
-## 工作流
+## Workflow
 
-### 1. 项目与自动分析
-
-```text
-□ 新建 Project → Import 文件 → Analyze（默认分析器）
-□ 记录语言/编译器识别结果与基址
-□ 标记入口、导出表、字符串 xref
-```
-
-### 2. 关键函数
+### 1. Project and auto-analysis
 
 ```text
-□ 从字符串 / 导入 API 反查
-□ Decompile 窗口还原算法
-□ 重命名函数/变量；写 Plate comment
-□ 需要动态时交接 Frida/GDB（reverse-engineering 动态章）
+□ New Project → Import file → Analyze (default analyzers)
+□ Record the language/compiler identification result and base address
+□ Mark the entry point, export table, and string xrefs
 ```
 
-### 3. Headless（批量）
+### 2. Key functions
+
+```text
+□ Pivot from strings / imported APIs
+□ Recover the algorithm in the Decompile window
+□ Rename functions/variables; write Plate comments
+□ When dynamics are needed, hand off to Frida/GDB (dynamic chapter of reverse-engineering)
+```
+
+### 3. Headless (batch)
 
 ```bash
-# 示例：analyzeHeadless 路径因安装而异，MUST 从 tool-index 取
+# Example: the analyzeHeadless path varies by installation; MUST take it from tool-index
 analyzeHeadless /path/to/project Proj -import sample.bin -postScript ExportDecomp.py
 ```
 
-### 4. MCP（若已配置）
+### 4. MCP (if configured)
 
 ```text
-□ 确认 ghidra MCP 端口（常见 8765，以 tool-index 为准）
-□ 用 MCP 工具拉反编译 / xrefs，禁止猜端口
+□ Confirm the ghidra MCP port (commonly 8765; tool-index is authoritative)
+□ Pull decompilation / xrefs with the MCP tools; never guess the port
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 | 自举 |
+| Tool | Purpose | Bootstrap |
 |------|------|------|
-| Ghidra | 反编译主工具 | 手动 release / 包管理器 |
-| ghidra-mcp | AI 桥 | bootstrap 能力名 `ghidra-mcp` |
-| ghidriff | 补丁差分 | 见 `patch-diff-exploit` |
+| Ghidra | Primary decompiler | Manual release / package manager |
+| ghidra-mcp | AI bridge | Bootstrap capability name `ghidra-mcp` |
+| ghidriff | Patch diffing | See `patch-diff-exploit` |
 
-## 参考
+## References
 
 - `references/ghidra-cheatsheet.md`
 - `../ida-reverse/` `../radare2/` `../binary-diff/`
 
-## 路由上下文
+## Routing Context
 
-**上游**: MASTER R22  
-**下游**: 动态验证 → Frida/GDB；利用 → `pwn-chain`  
-**同级**: `ida-reverse`（商业深挖）
+**Upstream**: MASTER R22  
+**Downstream**: Dynamic validation → Frida/GDB; exploitation → `pwn-chain`  
+**Peers**: `ida-reverse` (commercial deep analysis)
 
-## 任务完成自检
+## Task Completion Self-Check
 
-- [ ] 是否基于真实 Ghidra/tool-index 路径？
-- [ ] 是否标注函数地址与重命名？
-- [ ] 是否有可复现步骤？
-- [ ] Checklist / journal？
+- [ ] Did I use real Ghidra/tool-index paths?
+- [ ] Did I annotate function addresses and renames?
+- [ ] Are there reproducible steps?
+- [ ] Checklist / journal?

@@ -68,27 +68,27 @@ UNSAFE_AGENT_ENTRY_PATTERNS = {
         r"auto-configure after reading", re.I
     ),
     "execute-after-read-zh": re.compile(
-        r"读完(?:本文件|规则|文档)?后?[^\n]{0,40}(?:立即[^\n]{0,6}(?:执行|运行)|必须[：,:， ]{0,3}(?:执行|运行|NOW))",
+        r"after reading (?:this file|the rules|the document)?[^\n]{0,40}(?:immediately[^\n]{0,6}(?:execute|run)|must[::, ]{0,3}(?:execute|run|NOW))",
         re.I,
     ),
     "automatic-execution-after-read-zh": re.compile(
-        r"(?:读完|读取)[^\n]{0,40}自动(?:执行|运行)", re.I
+        r"(?:after reading|read)[^\n]{0,40}automatically (?:execute|run)", re.I
     ),
-    "global-instruction-injection-zh": re.compile(r"全局注入", re.I),
+    "global-instruction-injection-zh": re.compile(r"global injection", re.I),
     "side-effects-as-read-goal-zh": re.compile(
-        r"产生实际(?:的)?副作用", re.I
+        r"produce actual(?: )?side effects", re.I
     ),
     "extract-into-global-config-zh": re.compile(
-        r"首次配置时由 AI 提取本段写入", re.I
+        r"on first configuration, AI extracts this section and writes it", re.I
     ),
     "precedent-as-authorization-zh": re.compile(
-        r"授权已在 precedent-auth\.md 中确认", re.I
+        r"authorization already confirmed in precedent-auth\.md", re.I
     ),
     "precedent-as-step-zero": re.compile(
         r"step 0[^\n]{0,80}precedent-auth", re.I
     ),
     "precedent-declaration-as-gate-zh": re.compile(
-        r"precedent-auth\.md[^\n]{0,30}授权预声明", re.I
+        r"precedent-auth\.md[^\n]{0,30}authorization pre-declaration", re.I
     ),
 }
 

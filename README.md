@@ -2,7 +2,7 @@
   <img src="reverse-skill.png" alt="reverse-skill" width="140" />
 </p>
 <h1 align="center">reverse-skill</h1>
-<h3 align="center">Cybersecurity Skills Router · 逆向技能路由包</h3>
+<h3 align="center">Cybersecurity Skills Router · Reverse Engineering Skill Router Pack</h3>
 
 <p align="center"><em style="font-family: Georgia, serif; font-size: 1.2em; color: #777;">Navigate the dark waters, sail against the stream.</em></p>
 
@@ -35,7 +35,7 @@
 </p>
 
 <p align="center">
-  🌐 <a href="README_zh.md">中文</a> ·
+  🌐 <a href="README_zh.md">Chinese</a> ·
   <a href="https://reverse.apivix.com/">Project website</a> ·
   <a href="https://reverse.apivix.com/docs/">Online tutorial</a>
 </p>
